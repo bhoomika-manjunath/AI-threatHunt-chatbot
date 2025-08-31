@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Threat Hunting Assistant - Accelerate Security Investigations</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: #0f172a;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Navigation */
+        nav {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: #e2e8f0;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #3b82f6;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            padding: 120px 0 80px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" opacity="0.1"><defs><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 50 0 L 0 0 0 50" fill="none" stroke="%233b82f6" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .tagline {
+            font-size: 1.5rem;
+            color: #94a3b8;
+            margin-bottom: 1rem;
+            font-weight: 300;
+        }
+
+        .hero .subtitle {
+            font-size: 1.125rem;
+            color: #cbd5e1;
+            margin-bottom: 2.5rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-primary {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .cta-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Sections */
+        .section {
+            padding: 80px 0;
+        }
+
+        .section-dark {
+            background: #1e293b;
+        }
+
+        .section-light {
+            background: #f8fafc;
+            color: #334155;
+        }
+
+        .section h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #ffffff;
+        }
+
+        .section-light h2 {
+            color: #1e293b;
+        }
+
+        .section-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .section p {
+            font-size: 1.125rem;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            color: #cbd5e1;
+        }
+
+        .section-light p {
+            color: #64748b;
+        }
+
+        /* Problem Statement */
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .problem-item {
+            background: rgba(59, 130, 246, 0.1);
+            padding: 2rem;
+            border-radius: 12px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .problem-item h3 {
+            color: #3b82f6;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .problem-item p {
+            color: #cbd5e1;
+            font-size: 1rem;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1e293b;
+        }
+
+        .feature-card p {
+            color: #64748b;
+            font-size: 1rem;
+        }
+
+        /* Benefits */
+        .benefits-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .benefit-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .benefit-icon {
+            width: 40px;
+            height: 40px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 0.25rem;
+        }
+
+        .benefit-content h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+        }
+
+        .benefit-content p {
+            font-size: 1rem;
+            color: #cbd5e1;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            text-align: center;
+            padding: 80px 0;
+        }
+
+        .cta-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+
+        .cta-section p {
+            font-size: 1.25rem;
+            color: #cbd5e1;
+            margin-bottom: 2.5rem;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-secondary {
+            background: transparent;
+            color: #3b82f6;
+            padding: 1rem 2.5rem;
+            border: 2px solid #3b82f6;
+            border-radius: 50px;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .cta-secondary:hover {
+            background: #3b82f6;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Chatbot Styles */
+        .chatbot-container {
+            max-width: 900px;
+            margin: 3rem auto 0;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            overflow: hidden;
+        }
+
+        .chat-interface {
+            padding: 0;
+        }
+
+        .chat-messages {
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 2rem;
+            background: rgba(15, 23, 42, 0.5);
+        }
+
+        .bot-message, .user-message {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: flex-start;
+        }
+
+        .user-message {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+        }
+
+        .user-message .message-avatar {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .message-content {
+            background: rgba(59, 130, 246, 0.1);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            color: #e2e8f0;
+            line-height: 1.6;
+            max-width: 70%;
+        }
+
+        .user-message .message-content {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .analysis-result {
+            margin-top: 1rem;
+            padding: 1.5rem;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 12px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        .chart-container {
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .chart-title {
+            color: #3b82f6;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 200px;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .analysis-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+        }
+
+        .analysis-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .analysis-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .analysis-item h4 {
+            color: #3b82f6;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .analysis-item p {
+            color: #cbd5e1;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .risk-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .risk-high {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .risk-medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .risk-low {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .mitre-techniques {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .mitre-tag {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .chat-input-container {
+            padding: 2rem;
+            background: rgba(30, 41, 59, 0.5);
+            border-top: 1px solid rgba(59, 130, 246, 0.2);
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        #chatInput {
+            flex: 1;
+            padding: 1rem;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.8);
+            color: #e2e8f0;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        #chatInput:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        #chatInput::placeholder {
+            color: #64748b;
+        }
+
+        .analyze-btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 140px;
+            justify-content: center;
+        }
+
+        .analyze-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loader {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        footer {
+            background: #0f172a;
+            padding: 2rem 0;
+            text-align: center;
+            border-top: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        footer p {
+            color: #64748b;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero .tagline {
+                font-size: 1.25rem;
+            }
+            
+            .section h2 {
+                font-size: 2rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="container">
+            <div class="nav-container">
+                <a href="#" class="logo">🛡️ AI Threat Hunter</a>
+                <div class="nav-links">
+                    <a href="#features">Features</a>
+                    <a href="#benefits">Benefits</a>
+                    <a href="#demo">Demo</a>
+                    <a href="#contact">Contact</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>AI Threat Hunting Assistant</h1>
+                <p class="tagline">Accelerate investigations with AI-powered threat hunting</p>
+                <p class="subtitle">Natural language queries. Instant MITRE mapping. Smarter security.</p>
+                <a href="#demo" class="cta-primary">Request Demo</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Statement -->
+    <section class="section section-dark">
+        <div class="container">
+            <h2>The Challenge Security Teams Face</h2>
+            <div class="section-content">
+                <p>Security analysts spend countless hours manually crafting complex log queries, mapping incidents to MITRE ATT&CK frameworks, and searching through documentation to build effective threat hunting strategies.</p>
+            </div>
+            <div class="problem-grid">
+                <div class="problem-item">
+                    <h3>⏱️ Time-Intensive Manual Queries</h3>
+                    <p>Analysts waste 60-70% of their time writing and refining SIEM queries instead of analyzing threats</p>
+                </div>
+                <div class="problem-item">
+                    <h3>🎯 Inconsistent MITRE Mapping</h3>
+                    <p>Manual mapping to ATT&CK techniques leads to gaps in coverage and missed threat patterns</p>
+                </div>
+                <div class="problem-item">
+                    <h3>📚 Knowledge Fragmentation</h3>
+                    <p>Critical threat intelligence scattered across multiple sources slows down incident response</p>
+                </div>
+                <div class="problem-item">
+                    <h3>⚡ Delayed Response Times</h3>
+                    <p>Complex query development delays threat detection and extends attacker dwell time</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Overview -->
+    <section class="section section-light">
+        <div class="container">
+            <h2>Intelligent Solution Architecture</h2>
+            <div class="section-content">
+                <p>Our AI Threat Hunting Assistant leverages <strong>IBM Granite</strong> foundation models combined with advanced <strong>Retrieval-Augmented Generation (RAG)</strong> technology to transform how security teams operate.</p>
+                
+                <p>By ingesting the complete <strong>MITRE ATT&CK framework</strong>, thousands of <strong>Sigma detection rules</strong>, and proven <strong>incident response playbooks</strong> into an intelligent vector database, the assistant provides instant, context-aware responses to natural language security queries.</p>
+                
+                <p>This powerful combination enables <strong>natural language understanding</strong>, <strong>lightning-fast retrieval</strong> of relevant security intelligence, and <strong>automated query generation</strong> that would typically take analysts hours to develop.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Features -->
+    <section class="section section-dark" id="features">
+        <div class="container">
+            <h2>Key Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">💬</div>
+                    <h3>Natural Language Interface</h3>
+                    <p>Ask questions in plain English: "Show me lateral movement techniques targeting Windows domains" and get precise, actionable results instantly.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>MITRE ATT&CK Automation</h3>
+                    <p>Automatic mapping of threats to MITRE techniques with detailed context, sub-techniques, and mitigation strategies.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📋</div>
+                    <h3>Sigma Rule Generation</h3>
+                    <p>Generate production-ready Sigma detection rules based on threat scenarios, complete with proper syntax and field mappings.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📖</div>
+                    <h3>IR Playbook Integration</h3>
+                    <p>Access contextualized incident response procedures and playbooks tailored to specific threat patterns and attack techniques.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Fast Context-Aware Retrieval</h3>
+                    <p>Sub-second retrieval from indexed cybersecurity knowledge base with semantic understanding of security concepts.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3>IBM Granite AI Engine</h3>
+                    <p>Enterprise-grade AI foundation model specifically optimized for cybersecurity use cases and terminology.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits -->
+    <section class="section section-light">
+        <div class="container">
+            <div class="benefits-list">
+                <div class="benefit-item">
+                    <div class="benefit-icon">✓</div>
+                    <div class="benefit-content">
+                        <h3>Save 60% Analysis Time</h3>
+                        <p>Reduce query development from hours to minutes, allowing analysts to focus on actual threat investigation</p>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">✓</div>
+                    <div class="benefit-content">
+                        <h3>Improve Detection Accuracy</h3>
+                        <p>Leverage proven Sigma rules and MITRE mappings to eliminate coverage gaps and reduce false positives</p>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">✓</div>
+                    <div class="benefit-content">
+                        <h3>Accelerate Incident Response</h3>
+                        <p>Instant access to relevant playbooks and procedures reduces mean time to resolution (MTTR) by up to 40%</p>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">✓</div>
+                    <div class="benefit-content">
+                        <h3>Enhance SOC Efficiency</h3>
+                        <p>Enable junior analysts to perform like seasoned experts with AI-guided threat hunting and response</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Demo -->
+    <section class="section section-dark" id="demo">
+        <div class="container">
+            <h2>Try the AI Threat Hunter</h2>
+            <div class="section-content">
+                <p>Experience our AI-powered analysis. Describe a cyber fraud case and get instant MITRE ATT&CK analysis with risk assessment and remediation steps.</p>
+            </div>
+            
+            <div class="chatbot-container">
+                <div class="chat-interface">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="bot-message">
+                            <div class="message-avatar">🤖</div>
+                            <div class="message-content">
+                                <strong>AI Threat Hunter:</strong> Hello! I'm ready to analyze your cyber fraud case. Please describe the incident details, including any suspicious activities, affected systems, or indicators you've observed.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <textarea 
+                            id="chatInput" 
+                            placeholder="Describe your cyber fraud case (e.g., 'We detected unusual login attempts from multiple countries, followed by data exfiltration from our customer database...')"
+                            rows="3"
+                        ></textarea>
+                        <button id="analyzeBtn" class="analyze-btn">
+                            <span id="btnText">Analyze Case</span>
+                            <span id="btnLoader" class="loader" style="display: none;">🔄</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 AI Threat Hunting Assistant. All rights reserved. | Built for CISOs, SOC Managers, and Security Analysts</p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href && href !== '#') {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+            });
+        });
+
+        // Chatbot functionality
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const btnText = document.getElementById('btnText');
+        const btnLoader = document.getElementById('btnLoader');
+
+        // Sample MITRE ATT&CK database for demo
+        const mitreDatabase = {
+            'credential_access': {
+                techniques: ['T1110 - Brute Force', 'T1555 - Credentials from Password Stores', 'T1003 - OS Credential Dumping'],
+                stage: 'Credential Access',
+                description: 'Adversary is attempting to obtain account credentials'
+            },
+            'initial_access': {
+                techniques: ['T1566 - Phishing', 'T1190 - Exploit Public-Facing Application', 'T1078 - Valid Accounts'],
+                stage: 'Initial Access',
+                description: 'Adversary is trying to get into the network'
+            },
+            'persistence': {
+                techniques: ['T1053 - Scheduled Task/Job', 'T1547 - Boot or Logon Autostart Execution', 'T1136 - Create Account'],
+                stage: 'Persistence',
+                description: 'Adversary is trying to maintain access'
+            },
+            'defense_evasion': {
+                techniques: ['T1070 - Indicator Removal on Host', 'T1027 - Obfuscated Files or Information', 'T1055 - Process Injection'],
+                stage: 'Defense Evasion',
+                description: 'Adversary is trying to avoid being detected'
+            },
+            'lateral_movement': {
+                techniques: ['T1021 - Remote Services', 'T1091 - Replication Through Removable Media', 'T1210 - Exploitation of Remote Services'],
+                stage: 'Lateral Movement',
+                description: 'Adversary is moving through the environment'
+            },
+            'exfiltration': {
+                techniques: ['T1041 - Exfiltration Over C2 Channel', 'T1048 - Exfiltration Over Alternative Protocol', 'T1537 - Transfer Data to Cloud Account'],
+                stage: 'Exfiltration',
+                description: 'Adversary is stealing data'
+            }
+        };
+
+        function analyzeCase() {
+            const caseDescription = chatInput.value.trim();
+            
+            if (!caseDescription) {
+                alert('Please describe your cyber fraud case first.');
+                return;
+            }
+
+            // Show loading state
+            analyzeBtn.disabled = true;
+            btnText.style.display = 'none';
+            btnLoader.style.display = 'inline';
+
+            // Add user message
+            addMessage('user', caseDescription);
+
+            // Simulate AI analysis (in real implementation, this would call the API)
+            setTimeout(() => {
+                const analysis = performAnalysis(caseDescription);
+                addMessage('bot', analysis);
+                
+                // Reset button state
+                analyzeBtn.disabled = false;
+                btnText.style.display = 'inline';
+                btnLoader.style.display = 'none';
+                chatInput.value = '';
+            }, 2000);
+        }
+
+        function addMessage(type, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type === 'user' ? 'user-message' : 'bot-message';
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = type === 'user' ? '👤' : '🤖';
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            
+            if (type === 'user') {
+                messageContent.innerHTML = `<strong>You:</strong> ${content}`;
+            } else {
+                messageContent.innerHTML = content;
+            }
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(messageContent);
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function performAnalysis(caseDescription) {
+            // Simple keyword-based analysis for demo
+            const keywords = caseDescription.toLowerCase();
+            let detectedTechniques = [];
+            let stage = 'Unknown';
+            let riskLevel = 'Medium';
+            let riskPercentage = 50;
+            let stageData = {};
+            
+            // Initialize all stages for the radar chart
+            const allStages = {
+                'Initial Access': 0,
+                'Execution': 0,
+                'Persistence': 0,
+                'Privilege Escalation': 0,
+                'Defense Evasion': 0,
+                'Credential Access': 0,
+                'Discovery': 0,
+                'Lateral Movement': 0,
+                'Collection': 0,
+                'Exfiltration': 0,
+                'Impact': 0
+            };
+            
+            // Analyze for different attack stages
+            if (keywords.includes('login') || keywords.includes('password') || keywords.includes('brute') || keywords.includes('credential')) {
+                detectedTechniques.push(...mitreDatabase.credential_access.techniques);
+                stage = 'Credential Access';
+                riskPercentage = 75;
+                riskLevel = 'High';
+                allStages['Credential Access'] = 85;
+                allStages['Initial Access'] = 30;
+                allStages['Lateral Movement'] = 40;
+            }
+            
+            if (keywords.includes('phishing') || keywords.includes('email') || keywords.includes('malicious link') || keywords.includes('attachment')) {
+                detectedTechniques.push(...mitreDatabase.initial_access.techniques);
+                stage = 'Initial Access';
+                riskPercentage = 80;
+                riskLevel = 'High';
+                allStages['Initial Access'] = 90;
+                allStages['Execution'] = 25;
+            }
+            
+            if (keywords.includes('lateral') || keywords.includes('spread') || keywords.includes('network') || keywords.includes('admin')) {
+                detectedTechniques.push(...mitreDatabase.lateral_movement.techniques);
+                stage = 'Lateral Movement';
+                riskPercentage = 85;
+                riskLevel = 'High';
+                allStages['Lateral Movement'] = 90;
+                allStages['Credential Access'] = 70;
+                allStages['Discovery'] = 60;
+                allStages['Privilege Escalation'] = 50;
+            }
+            
+            if (keywords.includes('data') || keywords.includes('exfiltration') || keywords.includes('steal') || keywords.includes('download') || keywords.includes('upload')) {
+                detectedTechniques.push(...mitreDatabase.exfiltration.techniques);
+                stage = 'Exfiltration';
+                riskPercentage = 90;
+                riskLevel = 'High';
+                allStages['Exfiltration'] = 95;
+                allStages['Collection'] = 80;
+                allStages['Lateral Movement'] = 60;
+                allStages['Credential Access'] = 40;
+            }
+            
+            if (keywords.includes('schedule') || keywords.includes('persistence') || keywords.includes('backdoor') || keywords.includes('task')) {
+                detectedTechniques.push(...mitreDatabase.persistence.techniques);
+                stage = 'Persistence';
+                riskPercentage = 70;
+                riskLevel = 'High';
+                allStages['Persistence'] = 85;
+                allStages['Initial Access'] = 60;
+                allStages['Execution'] = 45;
+            }
+
+            if (keywords.includes('ransomware') || keywords.includes('encryption') || keywords.includes('bitcoin')) {
+                stage = 'Impact';
+                riskPercentage = 95;
+                riskLevel = 'High';
+                allStages['Impact'] = 95;
+                allStages['Exfiltration'] = 70;
+                allStages['Persistence'] = 60;
+                allStages['Lateral Movement'] = 80;
+            }
+
+            // Generate remediation steps based on detected stage
+            const remediationSteps = generateRemediation(stage, detectedTechniques);
+            
+            // Create unique IDs for charts
+            const chartId1 = 'attackStageChart_' + Date.now();
+            const chartId2 = 'riskChart_' + Date.now() + '_2';
+            
+            // Create the HTML content
+            const analysisHTML = '<strong>AI Threat Hunter Analysis:</strong>' +
+                '<div class="analysis-result">' +
+                    '<div class="analysis-grid">' +
+                        '<div class="chart-container">' +
+                            '<div class="chart-title">🎯 Attack Kill Chain Analysis</div>' +
+                            '<div class="chart-wrapper">' +
+                                '<canvas id="' + chartId1 + '"></canvas>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="chart-container">' +
+                            '<div class="chart-title">⚠️ Risk Assessment</div>' +
+                            '<div class="chart-wrapper">' +
+                                '<canvas id="' + chartId2 + '"></canvas>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="analysis-item">' +
+                        '<h4>🎯 Primary Attack Stage</h4>' +
+                        '<p><strong>' + stage + '</strong> - The adversary appears to be in the ' + stage.toLowerCase() + ' phase of the attack chain.</p>' +
+                    '</div>' +
+                    '<div class="analysis-item">' +
+                        '<h4>🔍 MITRE ATT&CK Techniques</h4>' +
+                        '<div class="mitre-techniques">' +
+                            detectedTechniques.slice(0, 4).map(technique => '<span class="mitre-tag">' + technique + '</span>').join('') +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="analysis-item">' +
+                        '<h4>🛡️ Recommended Actions</h4>' +
+                        '<p>' + remediationSteps + '</p>' +
+                    '</div>' +
+                '</div>';
+
+            // Add charts after DOM is updated
+            setTimeout(() => {
+                // Attack Stage Radar Chart
+                const ctx1 = document.getElementById(chartId1);
+                if (ctx1) {
+                    new Chart(ctx1, {
+                        type: 'radar',
+                        data: {
+                            labels: Object.keys(allStages),
+                            datasets: [{
+                                label: 'Activity Level (%)',
+                                data: Object.values(allStages),
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                borderColor: '#3b82f6',
+                                borderWidth: 2,
+                                pointBackgroundColor: '#3b82f6',
+                                pointBorderColor: '#ffffff',
+                                pointRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                r: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    grid: {
+                                        color: 'rgba(59, 130, 246, 0.2)'
+                                    },
+                                    angleLines: {
+                                        color: 'rgba(59, 130, 246, 0.2)'
+                                    },
+                                    pointLabels: {
+                                        color: '#cbd5e1',
+                                        font: {
+                                            size: 10
+                                        }
+                                    },
+                                    ticks: {
+                                        color: '#64748b',
+                                        backdropColor: 'transparent'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                
+                // Risk Assessment Pie Chart
+                const ctx2 = document.getElementById(chartId2);
+                if (ctx2) {
+                    const riskColor = riskLevel === 'High' ? '#ef4444' : riskLevel === 'Medium' ? '#f59e0b' : '#10b981';
+                    
+                    new Chart(ctx2, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Risk Level', 'Remaining'],
+                            datasets: [{
+                                data: [riskPercentage, 100 - riskPercentage],
+                                backgroundColor: [
+                                    riskColor,
+                                    'rgba(100, 116, 139, 0.3)'
+                                ],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '60%',
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+                    
+                    // Add percentage text in center
+                    const centerText = document.createElement('div');
+                    centerText.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #ffffff; font-size: 1.5rem; font-weight: bold; text-align: center; pointer-events: none;';
+                    centerText.innerHTML = riskPercentage + '%<br><span style="font-size: 0.8rem; color: #cbd5e1;">' + riskLevel + ' Risk</span>';
+                    ctx2.parentElement.style.position = 'relative';
+                    ctx2.parentElement.appendChild(centerText);
+                }
+            }, 100);
+
+            return analysisHTML;
+        }
+
+        function generateRemediation(stage, techniques) {
+            const remediationMap = {
+                'Credential Access': 'Immediately reset compromised credentials, enable MFA, monitor for unusual login patterns, and implement account lockout policies.',
+                'Initial Access': 'Isolate affected systems, scan for malware, update security awareness training, and strengthen email security controls.',
+                'Lateral Movement': 'Segment network traffic, disable unnecessary services, monitor lateral connections, and implement zero-trust architecture.',
+                'Exfiltration': 'Block suspicious outbound traffic, secure sensitive data, implement DLP controls, and conduct forensic analysis.',
+                'Persistence': 'Remove unauthorized scheduled tasks, scan for backdoors, harden system configurations, and monitor autostart locations.',
+                'Defense Evasion': 'Update detection rules, enhance logging, deploy behavioral analytics, and strengthen endpoint protection.'
+            };
+            
+            return remediationMap[stage] || 'Conduct thorough investigation, implement security best practices, and monitor for suspicious activities.';
+        }
+
+        // Event listeners
+        analyzeBtn.addEventListener('click', analyzeCase);
+        
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                analyzeCase();
+            }
+        });
+
+        // Add scroll effect to navigation
+        window.addEventListener('scroll', function() {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 100) {
+                nav.style.background = 'rgba(15, 23, 42, 0.98)';
+            } else {
+                nav.style.background = 'rgba(15, 23, 42, 0.95)';
+            }
+        });
+
+        // Add hover effects to feature cards
+        document.querySelectorAll('.feature-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
